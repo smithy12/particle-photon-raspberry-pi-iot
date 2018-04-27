@@ -1,418 +1,349 @@
-// rocksetta.ino
+<html>
+<head>
+<title>Particle Web Communication </title>
 
+<font style="font-size:30px">
 
-// For web control of the Particle.io Photon or
-// The raspberry PI
-// MIT license
+<!-- ********************* DO NOT MESS WITH THIS ADVANCED AJAX STUFF -->
+<!-- ********************* Look at the bottom of the page for student area -->
 
-
-// By Jeremy Ellis
-// Github site at     https://github.com/hpssjellis/particle-photon-raspberry-pi-iot
-//Github Pages webpage at     https://hpssjellis.github.io/particle-photon-raspberry-pi-iot/
-// Twitter: @rocksetta
-// Website: http://www.rocksetta.com
-
-
-
-
-//PUT YOUR VARIABLES HERE
-
-bool ShowConsoleMessages = true;  // When your app is fine set this false.
-
-bool myAutoControl = false;   // You may want this to be true so that the 
-                              // Special Loop controls something at startup
-bool myCommandGood = false;   // for sending an error message if no command was read.                          
-                            
-                            
-                            
-bool isPI = false;            // don't change auto detected at compile.
-String myDevice = "Photon";   // don't change, default is the Photon
-
-
-void setup(){
-    
-    if (PLATFORM_ID == 31){
-        isPI = true; 
-         myDevice = "Raspberry Pi";
-         if ( ShowConsoleMessages  ){ 
-             Particle.publish("Using", "Raspberry PI", 60, PRIVATE);   
-         } // end if show console
-        } else  {
-            if ( ShowConsoleMessages  ){ 
-               Particle.publish("Using", "Photon, Core or electron", 60, PRIVATE);   
-            } // end if show console
-        }
-    
-    Particle.function("my-main", myMain);  
-    
-    //PUT YOUR SETUP CODE HERE. Note: Only three more functions allowed!
-    // test everything using the return int from a function!
-
-    RGB.brightness(5);    // 1=very low light, 255 = max
-    
-    
-
-
-}
-
-void loop(){
-    
-    //PUT YOUR GENERIC LOOP CODE HERE
-    
-    if ( myAutoControl ){
-    
-     //PUT YOUR SPECIAL LOOP CODE HERE 
-    if ( ShowConsoleMessages  ){ 
-        Particle.publish("Special Loop", "Active", 60, PRIVATE);  
-        delay(5000);
-    } // end if show console   
-
-
-    
-    }
-
-}
-
-int myMain(String myCode) {
-    myCommandGood = false;
-    
-    String myDevicePlus = myDevice + " " + myCode;   // add to the device name whatever was sent to particle for the console  
-    
-    myCode.toUpperCase();           // set argument to uppercase
-    
-
-    
-    //digitalWrite(D7,HIGH);
-    
-    //myActivity -- pinNumber -- myOptional
-    
-    // Following is a bunch of code to sperate the above statment
-    
-
-   int myComma = myCode.indexOf(",");   // find the comma
-   if (myComma == -1) {myComma = myCode.indexOf(")");} //if no comma use end brackets
-   
-   int myOpenBracket = myCode.indexOf("(");  // find first baracket
-    
-    String  myActivity = myCode.substring(0, myOpenBracket);     // grab characters until bracket
-  //  String  myActivity = myCode.substring(0, myOpenBracket);     // grab characters until bracket
-    
-    String pinNumberString = myCode.substring(myOpenBracket+1, myComma);   // Grab the PIN Characters D7 etc
-    
-    String myOptional = myCode.substring(myComma + 1);   //grabs the numbers after the equal sign   
- 
-    myOptional = myOptional.replace(");", "");  // get rid of the ); at the end
-    
-   // for testing
-   // Particle.publish(myActivity, String(pinNumberString + ", "+myOptional), 60, PRIVATE);  
-    
-    int pinNumber = pinNumberString.toInt();
-    
-    pinNumberString = pinNumberString.replace(" ", "");  // ditch spaces
-
-        
-    int mySetWrite = 0;       
-     
-      
-    if(myOptional == "HIGH") {mySetWrite = 1;}
-        else if(myOptional == "LOW") {mySetWrite = 0; }
-            else if(myOptional == "ON") {mySetWrite = 1;}
-                else if(myOptional == "OFF") {mySetWrite = 0; }
-                   else {mySetWrite = myOptional.toInt();  }  // sets  write value
-      
-     
-#if (PLATFORM_ID == 31) 
-  // only compile following Raspberry PI stuff
-  
-
-    if (pinNumberString == "D0"){pinNumber = 4;}    
-    if (pinNumberString == "D1"){pinNumber = 17;}    
-    if (pinNumberString == "D2"){pinNumber = 27;}    
-    if (pinNumberString == "D3"){pinNumber = 22;}    
-    if (pinNumberString == "D4"){pinNumber = 5;}     
-    if (pinNumberString == "D5"){pinNumber = 4;}     
-    if (pinNumberString == "D6"){pinNumber = 13;}    // PWM   
-    if (pinNumberString == "D7"){pinNumber = 19;}    // PWM   
-    if (pinNumberString == "A0"){pinNumber = 18;}    // PWM   
-    if (pinNumberString == "A1"){pinNumber = 23;}    
-    if (pinNumberString == "A2"){pinNumber = 24;}    
-    if (pinNumberString == "A3"){pinNumber = 25;}    
-    if (pinNumberString == "A4"){pinNumber = 12;}    // PWM (Working)
-    if (pinNumberString == "A5"){pinNumber = 16;}    // PWM (not working)   
-    if (pinNumberString == "A6"){pinNumber = 20;}    
-    if (pinNumberString == "A7"){pinNumber = 21;}    
-    
-
-#else 
-  // only compile following Photon Stuff
-
-    if (pinNumberString == "D0"){pinNumber = 0;}     // PWM
-    if (pinNumberString == "D1"){pinNumber = 1;}     // PWM
-    if (pinNumberString == "D2"){pinNumber = 2;}     // PWM if not A4
-    if (pinNumberString == "D3"){pinNumber = 3;}     // PWM if not A5
-    if (pinNumberString == "D4"){pinNumber = 4;}    
-    if (pinNumberString == "D5"){pinNumber = 5;}     
-    if (pinNumberString == "D6"){pinNumber = 6;}    
-    if (pinNumberString == "D7"){pinNumber = 7;}    
-    if (pinNumberString == "A0"){pinNumber = 10;}    
-    if (pinNumberString == "A1"){pinNumber = 11;}   
-    if (pinNumberString == "A2"){pinNumber = 12;}    
-    if (pinNumberString == "A3"){pinNumber = 13;}    
-    if (pinNumberString == "A4"){pinNumber = 14;}      // PWM if not D2
-    if (pinNumberString == "A5"){pinNumber = 15;}      // PWM if Not D3
-    if (pinNumberString == "A6"){pinNumber = 16;}   
-    if (pinNumberString == "A7"){pinNumber = 17;}      // PWM
-    if (pinNumberString == "RX"){pinNumber = 18;}      // PWM // PWM
-    if (pinNumberString == "TX"){pinNumber = 19;}      // PWM
-   // if (pinNumberString == "BT"){pinNumber = 20;}    // BTN pin is 20 ??    
-   
-
-#endif
-     
-    
-    // PUT YOUR OWN IF STATEMENT HERE
-    // USE CODE     mine(xx,5);
-    if (myActivity == "MINE"){ 
-        myCommandGood = true;  // this command processed          
-          
-          // Your special code here
-          
-     return mySetWrite;     
-    }
-    
-    
-   
-     
-    if (myActivity == "WHOAMI"){   // which microprocessor
-        myCommandGood = true;  // this command processed
-        if ( isPI ){ 
-            mySetWrite = 31;   //raspberry PI
-         if ( ShowConsoleMessages  ){ 
-             Particle.publish("Using", "Raspberry PI", 60, PRIVATE);   
-         } // end if show console            
-        } else {
-            mySetWrite = 6;  // Photon 
-            if ( ShowConsoleMessages  ){ 
-               Particle.publish("Using", "Photon, Core or electron", 60, PRIVATE);   
-            } // end if show console            
-          }
-
-     return mySetWrite;     
-    }     
-    
-  
-    
-    if (myActivity == "LOOP"){   //xx:loop:1  sets loop to be on
-        myCommandGood = true;  // this command processed
-        if (mySetWrite == 0) {
-            myAutoControl = false; 
-            if ( ShowConsoleMessages  ){ 
-               Particle.publish("Looping", "Auto loop turned off" , 60, PRIVATE); 
-            } // end if show console    
-        }  
-        if (mySetWrite == 1) {
-            myAutoControl = true;
-            if ( ShowConsoleMessages  ){ 
-               Particle.publish("Looping", "Auto loop turned on" , 60, PRIVATE); 
-            } // end if show console    
-        }  
-          
-        
-        Particle.publish(myDevicePlus , String(myActivity + ", " + pinNumberString + " Pin = " + 
-            String(pinNumber, DEC) + " returning = " + String(mySetWrite, DEC) ), 60, PRIVATE);  
-          
-     return mySetWrite;     
-    }   
-    
-    
-    
-    
-    
-    
-  
-#if (PLATFORM_ID == 31) 
-  // only compile following Raspberry PI stuff
-   
-        if (myActivity == "DIGITALREAD"){    //digital read
-            myCommandGood = true;  // this command processed
-            pinMode(pinNumber, INPUT_PULLDOWN);
-            mySetWrite = digitalRead(pinNumber);
-            if ( ShowConsoleMessages  ){ 
-               Particle.publish(myDevicePlus , String(myActivity + ", " + pinNumberString + " Pin = " + 
-                  String(pinNumber, DEC) + " returning = " + String(mySetWrite, DEC) ), 60, PRIVATE); 
-             } // end if show console             
-            
-            return mySetWrite;  
-        }
-        
-        
-         if (myActivity == "DIGITALWRITE"){    //digital write   
-            myCommandGood = true;  // this command processed
-            pinMode(pinNumber, OUTPUT);
-            digitalWrite(pinNumber, mySetWrite);
-            if ( ShowConsoleMessages  ){ 
-               Particle.publish(myDevicePlus , String(myActivity + ", " + pinNumberString + " Pin = " + 
-                   String(pinNumber, DEC) + " returning = " + String(mySetWrite, DEC) ), 60, PRIVATE); 
-            } // end if show console                  
-            
-            return mySetWrite;
-        }   
-        
-        
-        // PWM 0-255 on the PI only on certain pins 13, 16, 18, 19 
-        
-        if (myActivity == "ANALOGWRITE"){    //Analog Write
-          myCommandGood = true;  // this command processed
-          if (pinNumber == 13 || pinNumber == 16 || pinNumber == 18 || pinNumber == 19 ){
-            pinMode(pinNumber, OUTPUT);
-            analogWrite(pinNumber,  mySetWrite);
-            if ( ShowConsoleMessages  ){ 
-               Particle.publish(myDevicePlus , String(myActivity + ", " + pinNumberString + " Pin = " + 
-                  String(pinNumber, DEC) + " returning = " + String(mySetWrite, DEC) ), 60, PRIVATE);  
-            
-            } // end if show console              
-
-            return mySetWrite;
-        }  else {
-            
-            
-         if ( ShowConsoleMessages  ){ 
-               Particle.publish("Error", "Wrong PI Pin number for AnalogWrite" , 60, PRIVATE); 
-         } // end if show console     
-           }         
-      } // end if analogWrite
-      
-      
-        if (myActivity == "ANALOGREAD"){    //NOT on PI
-            myCommandGood = true;  // this command processed
-            int myCounter = 0;
-            
-            // for capacitor method on Raspberry PI  
-            //   3V3 --> Variable Resistor (parallel line to PinNumber) --> ~0.1 uf Capacitor --> 100 ohm resistor --> GND 
-            pinMode(pinNumber, OUTPUT);
-            digitalWrite(pinNumber, 0);  // set LOW to drain capacitor
-            delayMicroseconds(10000);
-
-            pinMode(pinNumber, INPUT);  // Pin set to read
-
-   
-            while (digitalRead(pinNumber) == 0){
-               delayMicroseconds(1);
-               myCounter += 1;
-               if (myCounter > 10000){     // Loop always has an exit
-                    Particle.publish("Analog Read Error on PI:", "Timed out more than 10,000 loops", 60, PRIVATE);
-                    break;  // exit while loop if too long
-                }
-            } // end while loop
-    
-    
-           // mess around with the resistor and capacitor to get your widest counter range
-           // then counter range / 4095 to get your multiplier
-           int myCounter2 = 4095-(myCounter * 6.31);   // *6.31 depending on your range of counter values my max was  4095 / 649 = 6.31
-           if (myCounter2 <= 0){ myCounter2 = 0; }   // so no negative numbers
-
-            mySetWrite = myCounter2;  
-           
-            Particle.publish(myDevicePlus , String(myActivity + ", " + pinNumberString + " Pin = " + 
-                String(pinNumber, DEC) + " Capacitive return = " + String(mySetWrite, DEC) ), 60, PRIVATE); 
-            
-
-            return mySetWrite;  
-        }
-      
-      
-      
-
-#else 
-  // only compile following Photon Stuff
-       if (pinNumber < 10){
-           if (myActivity == "DIGITALREAD"){    //digital read
-              myCommandGood = true;  // this command processed
-              pinMode(pinNumber, INPUT_PULLDOWN);
-              mySetWrite = digitalRead(pinNumber);
-            if ( ShowConsoleMessages  ){ 
-               Particle.publish(myDevicePlus , String(myActivity + ", " + pinNumberString + " Pin = " + 
-                 String(pinNumber, DEC) + " returning = " + String(mySetWrite, DEC) ), 60, PRIVATE); 
-              
-            } // end if show console                
-
-              return mySetWrite;  
-        }
-        
-   
-        
-         if (myActivity == "DIGITALWRITE"){    //digital write   D3:writeHIGH  to fit the 5th letter miss the final colon
-            myCommandGood = true;  // this command processed
-            pinMode(pinNumber, OUTPUT);
-            digitalWrite(pinNumber, mySetWrite);
-           if ( ShowConsoleMessages  ){ 
-              Particle.publish(myDevicePlus , String(myActivity + ", " + pinNumberString + " Pin = " + 
-                 String(pinNumber, DEC) + " returning = " + String(mySetWrite, DEC) ), 60, PRIVATE); 
-           } // end if show console               
-
-            return mySetWrite;
-        }         
-       
-       } else {  // only photon has analog read pin numbers over 10
-       
-        if (myActivity == "ANALOGREAD"){    //Analog read     values 0-4095   
-            myCommandGood = true;  // this command processed
-            mySetWrite = analogRead(pinNumber);  
-           
-            if ( ShowConsoleMessages  ){ 
-               Particle.publish(myDevicePlus , String(myActivity + ", " + pinNumberString + " Pin = " + 
-                   String(pinNumber, DEC) + " returning = " + String(mySetWrite, DEC) ), 60, PRIVATE); 
-
-            } // end if show console                  
-
-            return mySetWrite;  
-        }
-         
-         
-       // PWM 0-255 on Photon only on these pins:  D0, D1, (A4 or D2), (A5 or D3), WKP=A7, RX, TX
-       if (myActivity == "ANALOGWRITE"){    //Analog Write 
-          myCommandGood = true;  // this command processed
-          if (pinNumber == 0 || pinNumber == 1 || pinNumber == 2 || pinNumber == 3    || pinNumber == 14  || pinNumber == 15  || pinNumber == 17   || pinNumber == 18  || pinNumber == 19   ){
-       
-            pinMode(pinNumber, OUTPUT);
-            analogWrite(pinNumber,  mySetWrite);  
-            if ( ShowConsoleMessages  ){ 
-               Particle.publish(myDevicePlus , String(myActivity + ", " + pinNumberString + " Pin = " + 
-                    String(pinNumber, DEC) + " returning = " + String(mySetWrite, DEC) ), 60, PRIVATE); 
-            } // end if show console        
-            
-            return mySetWrite;
+<script type="text/javascript">
+<!--
+var loadingmessage = 'Processing...';
+function setAjax(){
+   var xmlHttp;
+   try{
+      xmlHttp=new XMLHttpRequest(); // Firefox, Opera 8.0+, Safari
+      return xmlHttp;
+   }
+   catch (e){
+      try{
+         xmlHttp=new ActiveXObject("Msxml2.XMLHTTP"); // Internet Explorer
+         return xmlHttp;
+      }
+      catch (e){
+         try{
+            xmlHttp=new ActiveXObject("Microsoft.XMLHTTP");
+            return xmlHttp;
          }
-         if ( ShowConsoleMessages  ){ 
-               Particle.publish("Error", "Wrong Photon Pin number for AnalogWrite" , 60, PRIVATE); 
-         } // end if show console      
+         catch (e){
+            alert("Your browser does not support AJAX!");
+            return false;
+         }
+     }
+   }
+}
+function myAjax(f, url, myDivToChange) {
+   var poststr = getFormValues(f);
+    postData(url, poststr, myDivToChange);
+}
+function postData(url, parameters, myDivToChange2){
+   var xmlHttp = setAjax();
+   xmlHttp.onreadystatechange =  function(){
+      if(xmlHttp.readyState > 0 && xmlHttp.readyState < 4){
+          document.getElementById(myDivToChange2).innerHTML=loadingmessage;
+      }
+      if (xmlHttp.readyState == 4) {
+             // this is where the magic occcurs
+             
+          var myJsonObject = JSON.parse(xmlHttp.responseText);
+             
+             
+           //document.getElementById(myDivToChange2).innerHTML=xmlHttp.responseText+' data sent was '+parameters;
+         
+           document.getElementById(myDivToChange2).innerHTML= myJsonObject.return_value;
          
          
-       }    
          
-           
-       }
-       
-#endif  
-    
-   
-   
-   
-   
-   if ( myCommandGood ){   
-          // a command was done so all is good.
-       } else {
-           // No command was done so must be an error
-          Particle.publish( myDevicePlus    , "Error: This command not understood!", 60, PRIVATE);  
-          pinMode(D7, OUTPUT);
-          digitalWrite(D7, HIGH);
-          delay(5);                 
-          digitalWrite(D7, LOW);
-       }
-   
-   
-    
- 
+      }
+   }
+   xmlHttp.open("POST", url, true);
+   xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+   xmlHttp.send(parameters);
+}
+function getFormValues(fobj){
+   var str = "";
+   var valueArr = null;
+   var val = "";
+   var cmd = "";
+   for(var i = 0;i < fobj.elements.length;i++){
+      switch(fobj.elements[i].type){
+         case "text":
+            str += fobj.elements[i].name +"=" + escape(fobj.elements[i].value) + "&";
+            break;         
+         case "password":
+            str += fobj.elements[i].name +"=" + escape(fobj.elements[i].value) + "&";
+            break;
+         case "textarea":
+            str += fobj.elements[i].name +"=" + escape(fobj.elements[i].value) + "&";
+            break;
+         case "select-one":
+             str += fobj.elements[i].name +"=" + fobj.elements[i].options[fobj.elements[i].selectedIndex].value + "&";
+             break;
+     }
+   }
+   str = str.substr(0,(str.length - 1));
+   return str;
+}
+function sendToParticle(myIn){
+    document.all.myParameter.value = myIn
+    document.myForm.action = 'https://api.spark.io/v1/devices/' + document.all.myDeviceId.value + '/' + document.all.myFunctionName.value
+    myAjax(document.all.myCoolForm, document.myForm.action, 'myDivId')   
     
 }
+//--></script>
 
+
+
+
+
+
+
+</head>
+
+<body onload="{
+   myStorage1 = localStorage.getItem('myStoredText1')
+   if(myStorage1  != null){     
+      document.getElementById('myToken').value = myStorage1 
+    }   
+    myStorage2 = localStorage.getItem('myStoredText2')
+    if(myStorage2  != null){
+       document.getElementById('myDeviceId').value = myStorage2      
+    }
+          
+}">
+
+  
+
+   
+   
+   
+   
+   
+   
+   
+ 
+
+   
+
+
+
+
+
+
+   <h2 align=center>Web <a href="http://particle.io">Particle.io</a> Photon or Raspberry PI Communication</h2>
+   <h3>Github repository at <a href="https://github.com/hpssjellis/particle-photon-raspberry-pi-iot">https://github.com/hpssjellis/particle-photon-raspberry-pi-iot</a></h3>
+
+
+
+Device ID:<input id="myDeviceId" name="myCoreID" type=password size=50 placeholder="78dd12345678123456"> <br>
+Get this from the core area when logged in<br>
+
+<input id="myFunctionName" name="myFunction"  type=hidden size=50 value="my-main" > 
+
+<form name="myForm" method="POST" id="myCoolForm" ><br>
+
+<input id="myParameter" name="params" type=text  style="display:none"     size=50 placeholder="d7-send-high"> 
+
+Access Token:<input id="myToken" name="access_token" type=password size=50 placeholder="5622ce6bba702ef6bd3456d5ed26aaa4a28d7c9"> <br>
+Get this from the settings area when logged into <a href="http://particle.io/build">http://particle.io/build</a><br>
+
+
+
+
+</form>
+
+
+
+<input type="button" value="Store the Photon's Token and ID locally!" onClick="{
+   localStorage.setItem('myStoredText1', document.all.myToken.value)   
+   localStorage.setItem('myStoredText2', document.all.myDeviceId.value)
+   alert('Device ID =' + document.all.myDeviceId.value +'\n\nAccess Token='+ document.all.myToken.value +' \n\nHas been stored')
+}">
+
+
+
+
+
+
+<br><br>
+
+
+   
+ <input type="button" value="WHOAMI" onClick="{
+    sendToParticle('WHOAMI(xx,1)')
+}"> 31=Raspberry PI, 6=Photon<br>  
+   
+ <input type="button" value="Activate Loop" onClick="{
+    if (this.value == 'Activate Loop'){                                                 
+        sendToParticle('loop(xx,1);') 
+        this.value = 'Stop Looping'
+    } else {
+        sendToParticle('loop(xx,0);')  
+        this.value = 'Activate Loop'
+    }
+}"> Direct microprocessor looped control <br><br>
+   
+   
+   
+  
+<div width="400" height="200" name="myDivName" id="myDivId"> output here </div><hr>
+   
+   
+   
+<!-- ********************* END OF:       DO NOT MESS WITH THIS ADVANCED STUFF -->  
+
+
+
+<!-- ********************* You change the following buttons as needed -->  
+
+   
+   
+   
+   
+   
+
+<input type="button" value="digitalWrite(D7,HIGH);" onClick="{
+    sendToParticle('digitalWrite(D7,HIGH);')
+}">
+
+<input type="button" value="digitalWrite(D7,LOW);" onClick="{
+    sendToParticle('digitalWrite(D7,LOW);')
+}"><br> Can also use on and off or 1 and 0
+
+
+<input type="button" value="digitalWrite(d7,1);" onClick="{
+    sendToParticle('digitalWrite(d7,1);')
+}">
+<input type="button" value="digitalWrite(d7,0);" onClick="{
+    sendToParticle('digitalWrite(d7,0);')
+}"><br><br>
+
+Note that Advanced users can also use the pin numbers, so D7 = pin 7 on Photon but D7 = GPIO 19 on the Raspberry PI<br><br>   
+   
+   
+   
+<input type="button" value="digitalWrite(D0,1);" onClick="{
+    sendToParticle('digitalWrite(D0,1);')
+}">
+
+<input type="button" value="digitalWrite(D0,0);" onClick="{
+    sendToParticle('digitalWrite(D0,0);')
+}">   <br><br>
+
+
+   
+   
+   
+<input type="button" value="digitalRead(D6);" onClick="{
+    sendToParticle('digitalRead(D6);')
+}"><br><br>
+  
+   
+<input type="button" value="analogRead(A0);" onClick="{
+    sendToParticle('analogRead(A0);')
+}">   Photon Direct Analog input, PI uses capactive Input both returns 0-4095<br>
+     
+   
+   
+   
+
+<input type="button" value="analogWrite(A4,255);" onClick="{
+    sendToParticle('analogWrite(A4,255);')
+}"> Powerful
+  
+
+<input type="button" value="analogWrite(A4,100);" onClick="{
+    sendToParticle('analogWrite(A4,100);')
+}"> Medium
+  
+<input type="button" value="analogWrite(A4,0);" onClick="{
+    sendToParticle('analogWrite(A4,0);')
+}"> Off,  These are PWM 0-255 <br><br>
+     
+   
+   <hr>
+   <h3>Delete the following after finished testing</h3>
+<!-- ********************* Delete the following when happy with your page -->     
+   
+<input id="mySpecialIn" type=text value="digitalWrite(D7,1);"  placeholder="digitalWrite(D7,1);">
+<input type="button" value="<--Submit" onClick="{
+    sendToParticle(document.all.mySpecialIn.value)
+}"><br>
+
+
+If using a sensor edit the below code to set your values to a correct amount with units:<br>
+ <input type=button id="myToVolts" value="Test conversion for Volts" onclick="{
+  var myTemp = parseFloat(getElementById('myDivId').innerHTML)
+  document.all.myCalc1.value = (myTemp * 3.3 / 4095).toFixed(2);   // edit this to test your data
+}">
+: <input type=text id="myCalc1" value=0 size=5>Volts <hr><br>    
+   
+   
+<hr>
+<h2 align=center>On the Photon</h2>
+   
+   <img  width="900" src="http://rocksetta.com/spark-core-photon/photon-pins.png"><br><br>
+<br>   
+Note: Analog sensors A0-A7 read from 0-4095<br><br>   
+Note: PWM from 0 to 255 and works on the following 7 pins<br>
+D0, D1, (A4 or D2), (A5 or D3), WKP=A7, RX, TX<br>
+
+ Serial - I2C<br> 
+D0 = SDA<br>
+D1 = SCL<br> <br>
+
+
+Serial - SPI <br>
+A5  = MOSI <br>
+A4  = MISO <br>
+A3  = SCLK <br> <br>
+
+Serial - UART <br> 
+TX  = Serial Pin 1 <br>
+RX  = Serial Pin 2 <br>  <br>  <br>     
+   
+
+<h2 align=center>For the Raspberry PI</h2>
+GPIO pins at:  2-27 Some are preset pull-up.<br>
+Note: PWM! only at GPIO pins:  13, 16,  18,  19  <br><br>
+ 
+Note: The Raspberry PI does not have analogRead ability, so I have tricked the PI into thinking A0-A7 are Analog Reads by assuming a 
+   capacitor is being used and a very fast loop is counting the number of loops until the capacitor is charged. <br>
+   The circuit goes: 3V3 --> variable resistor --> (Branching to GPIO pin ) --> 0.10 uF Capacitor --> 100 ohm resistor --> GND <br>
+    
+   
+   
+Serial - I2C<br> 
+GPIO 2 = SDA<br>
+GPIO 3 = SCL<br> <br>
+
+
+Serial - SPI <br>
+GPIO 10 = MOSI <br>
+GPIO 9  = MISO <br>
+GPIO 11 = SCLK <br> <br>
+
+Serial-UART <br> 
+GPIO 8  = TX <br>
+GPIO 10 = RX <br>  <br>  <br>   
+   
+   
+Note: I have only mentioned GPIO pin numbers and not physical pin numbers to make things less confusing. Lookup the Pin numbers<br><br>
+  
+   <img  width="500" src="http://rocksetta.com/spark-core-photon/gpio05.png"><br><br>
+   <img  width="600" src="http://rocksetta.com/spark-core-photon/chart05.png"><br><br>
+
+
+
+<hr>
+
+<!-- ********************* End Delete when finished editing. -->  
+By Jeremy Ellis<br>
+   Website <a href="">http://rocksetta.com</a><br>
+   Twitter <a href="https://twitter.com/rocksetta">@rocksetta</a><br>
+   
+Use at your own risk<br>
+</font>
+</body>
+</html>
